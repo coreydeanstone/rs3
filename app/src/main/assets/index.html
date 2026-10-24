@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1b1610">
+  <title>Clue Solver</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>Clue Solver <span class="sub">RS3 Treasure Trails</span></h1>
+  </header>
+
+  <main>
+    <!-- Clues: searchable text clues -->
+    <section id="tab-clues" class="tab active">
+      <div class="searchbar">
+        <input id="q" type="search" placeholder="Type any part of the clue…" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button id="q-clear" class="icon-btn" aria-label="Clear">✕</button>
+      </div>
+      <div class="chips" id="type-chips"></div>
+      <div class="chips small" id="diff-chips"></div>
+      <div id="results" class="list"></div>
+    </section>
+
+    <!-- Coordinates -->
+    <section id="tab-coords" class="tab">
+      <p class="hint">Enter the numbers from your clue. Results update as you type.</p>
+      <div class="coord-form">
+        <div class="coord-row">
+          <input id="c-d1" type="number" inputmode="numeric" placeholder="deg" min="0" max="99">
+          <span>°</span>
+          <input id="c-m1" type="number" inputmode="numeric" placeholder="min" min="0" max="59">
+          <span>′</span>
+          <div class="toggle" id="c-ns"><button data-v="N" class="on">N</button><button data-v="S">S</button></div>
+        </div>
+        <div class="coord-row">
+          <input id="c-d2" type="number" inputmode="numeric" placeholder="deg" min="0" max="99">
+          <span>°</span>
+          <input id="c-m2" type="number" inputmode="numeric" placeholder="min" min="0" max="59">
+          <span>′</span>
+          <div class="toggle" id="c-ew"><button data-v="E" class="on">E</button><button data-v="W">W</button></div>
+        </div>
+      </div>
+      <div id="coord-results" class="list"></div>
+    </section>
+
+    <!-- Scans -->
+    <section id="tab-scans" class="tab">
+      <div id="scan-list" class="list"></div>
+      <div id="scan-detail" hidden></div>
+    </section>
+
+    <!-- Puzzles -->
+    <section id="tab-puzzles" class="tab">
+      <div class="seg" id="puzzle-seg">
+        <button data-p="slide" class="on">Puzzle box</button>
+        <button data-p="lockbox">Lockbox</button>
+        <button data-p="towers">Towers</button>
+        <button data-p="tips">Knots &amp; compass</button>
+      </div>
+      <div id="puzzle-slide" class="puzzle"></div>
+      <div id="puzzle-lockbox" class="puzzle" hidden></div>
+      <div id="puzzle-towers" class="puzzle" hidden></div>
+      <div id="puzzle-tips" class="puzzle" hidden></div>
+    </section>
+  </main>
+
+  <nav class="bottom">
+    <button data-tab="clues" class="on"><span class="ico">🔎</span>Clues</button>
+    <button data-tab="coords"><span class="ico">🧭</span>Coords</button>
+    <button data-tab="scans"><span class="ico">📡</span>Scans</button>
+    <button data-tab="puzzles"><span class="ico">🧩</span>Puzzles</button>
+  </nav>
+
+  <script src="data.js"></script>
+  <script src="solvers.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
