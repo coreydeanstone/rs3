@@ -13,6 +13,10 @@ nearest) dig spot appears with directions.
 **Scans tab** – every elite/master scan region with its orb range and all
 possible dig spots. Tap spots to cross them off as you eliminate them.
 
+**Ask Claude** – every clue, scan area and puzzle has an “Ask Claude” button. It
+writes up the clue for you, copies it, and opens the Claude app (your normal
+Claude subscription – no API key). If the message box is empty, just paste.
+
 **Puzzles tab**
 - *Puzzle box* – pick the picture, tap the pieces to copy your scrambled box,
   then follow the step-by-step moves (the tile to click flashes).

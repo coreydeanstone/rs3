@@ -14,6 +14,19 @@
   const cap = s => s ? s[0].toUpperCase() + s.slice(1) : '';
 
   // ---------------------------------------------------------------------------
+  // "Ask Claude": hands a ready-made question to the Claude app (via the Android
+  // bridge), or copies it and opens claude.ai when running in a plain browser.
+  // ---------------------------------------------------------------------------
+  const ASK_TAIL = '\n\nMy question: ';
+  function askClaude(text) {
+    const msg = 'I\'m doing a RuneScape 3 (RS3) Treasure Trail.\n\n' + text.trim() + ASK_TAIL;
+    if (window.Android && window.Android.askClaude) { window.Android.askClaude(msg); return; }
+    const open = () => window.open('https://claude.ai/new', '_blank');
+    try { navigator.clipboard.writeText(msg).then(open, open); } catch (e) { open(); }
+  }
+  const askBtn = (label) => `<button class="btn ask" data-ask>✨ ${label || 'Ask Claude'}</button>`;
+
+  // ---------------------------------------------------------------------------
   // Tabs + back handling
   // ---------------------------------------------------------------------------
   let currentTab = 'clues';
@@ -101,7 +114,7 @@
       ${e.map ? `<img class="map" loading="lazy" src="${esc(e.map)}" alt="Map clue">` : ''}
       ${e.title ? `<div class="clue">${esc(e.title)}</div>` : ''}
       <div class="answer">${esc(e.answer)}</div>
-      <div class="details"><dl>${items}${det}</dl><div class="pic"></div></div>
+      <div class="details"><dl>${items}${det}</dl><div class="pic"></div>${askBtn()}</div>
     </div>`;
   }
 
@@ -150,9 +163,21 @@
       im.onerror = () => im.remove();
     }
   }
-  $('#results').addEventListener('click', e => {
-    const c = e.target.closest('.card'); if (c) openCard(c);
-  });
+  function askAboutEntry(e) {
+    const lines = [`Clue type: ${typeLabel[e.type]}${e.d ? ` (${e.d} clue)` : ''}`];
+    if (e.title) lines.push(`Clue text: ${e.title}`);
+    if (e.type === 'map') lines.push('(It\'s a map clue.)');
+    lines.push(`My solver app says the answer is: ${e.answer}`);
+    if (e.items && e.items.length) lines.push(`Items to equip: ${e.items.join(', ')}`);
+    e.details.filter(([, v]) => v).forEach(([k, v]) => lines.push(`${k}: ${v}`));
+    askClaude(lines.join('\n'));
+  }
+  function cardClick(ev) {
+    const c = ev.target.closest('.card'); if (!c) return;
+    if (ev.target.closest('[data-ask]')) return askAboutEntry(entries[+c.dataset.i]);
+    openCard(c);
+  }
+  $('#results').addEventListener('click', cardClick);
 
   let qTimer;
   $('#q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(renderResults, 120); });
@@ -208,9 +233,7 @@
     const first = $('.card.exact', out);
     if (first) openCard(first);
   }
-  $('#coord-results').addEventListener('click', e => {
-    const c = e.target.closest('.card'); if (c) openCard(c);
-  });
+  $('#coord-results').addEventListener('click', cardClick);
   renderCoords();
 
   // ---------------------------------------------------------------------------
@@ -239,6 +262,7 @@
       <div class="row-actions">
         <button class="btn" data-act="imgs">${showImgs ? 'Hide' : 'Show'} pictures</button>
         <button class="btn" data-act="reset">Reset crossed-off</button>
+        ${askBtn()}
       </div>
       <div class="list">${s.spots.map((p, j) => `<div class="card spot ${done.includes(j) ? 'done' : ''}" data-j="${j}">
         <div class="num">${j + 1}</div>
@@ -257,6 +281,12 @@
   $('#scan-detail').addEventListener('click', e => {
     const s = D.scans[openScan];
     if (e.target.closest('.back')) return closeScan();
+    if (e.target.closest('[data-ask]')) {
+      const done = store.get('scan-' + s.region, []);
+      const left = s.spots.map((p, j) => (done.includes(j) ? null : `${j + 1}. ${p.t}`)).filter(Boolean);
+      return askClaude(`I have ${s.d === 'elite' ? 'an' : 'a'} ${s.d} scan clue: "${s.wording}" (${s.region}). Orb scan range: ${s.range || '?'} paces.\n` +
+        `Dig spots I haven't ruled out yet (${left.length} of ${s.spots.length}):\n${left.join('\n')}`);
+    }
     const act = e.target.closest('[data-act]');
     if (act) {
       if (act.dataset.act === 'imgs') store.set('scanImgs', !store.get('scanImgs', true));
@@ -278,6 +308,25 @@
   // Puzzles: segmented control
   // ---------------------------------------------------------------------------
   let currentPuzzle = 'slide';
+  $('#puzzle-ask').addEventListener('click', () => {
+    const iconName = v => ICONS[v][2];
+    const rows = (g, f) => [0, 1, 2, 3, 4].map(r => g.slice(r * 5, r * 5 + 5).map(f).join(' ')).join('\n');
+    if (currentPuzzle === 'slide') {
+      const txt = slide.stage === 'solve'
+        ? `I'm solving a puzzle box (5x5 sliding puzzle)${slide.img ? ` with the ${slide.img.replace(/_/g, ' ')} picture` : ''}. My solver app gave me ${slide.clicks.length} moves and I'm on move ${slide.step + 1}.`
+        : `I'm stuck on a puzzle box (5x5 sliding tile puzzle)${slide.img ? ` with the ${slide.img.replace(/_/g, ' ')} picture` : ''}.`;
+      return askClaude(txt);
+    }
+    if (currentPuzzle === 'lockbox') {
+      return askClaude(`I'm solving a master clue lockbox (5x5 grid of melee/ranged/magic icons; clicking a square cycles it and its 4 neighbours). My current grid:\n${rows(lock.grid, iconName)}`);
+    }
+    if (currentPuzzle === 'towers') {
+      const f = a => a.map(v => v || '-').join(' ');
+      return askClaude(`I'm solving a master clue towers puzzle (5x5, heights 1-5, edge numbers = towers visible).\nTop: ${f(tw.top)}\nBottom: ${f(tw.bottom)}\nLeft (top to bottom): ${f(tw.left)}\nRight (top to bottom): ${f(tw.right)}` +
+        (tw.sol ? `\nMy solver app's answer:\n${tw.sol.map(r => r.join(' ')).join('\n')}` : ''));
+    }
+    askClaude('I need help with a celtic knot or compass clue.');
+  });
   $('#puzzle-seg').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     currentPuzzle = b.dataset.p;

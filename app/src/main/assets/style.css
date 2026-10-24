@@ -130,6 +130,8 @@ nav.bottom button.on .ico { filter: none; }
 }
 .btn.primary { background: var(--gold); border-color: var(--gold); color: #1b1408; font-weight: 700; }
 .btn:disabled { opacity: .4; }
+.btn.ask { border-color: #c9784f; color: #f0b394; }
+.card .details .btn.ask { margin-top: 10px; }
 
 /* puzzles */
 .puzzle h2 { font-size: 16px; color: var(--gold); margin: 6px 0; }

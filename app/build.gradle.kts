@@ -10,8 +10,8 @@ android {
         applicationId = "com.coreystone.cluesolver"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
     }
 
     // One shared key so locally-built and CI-built APKs can update each other.
