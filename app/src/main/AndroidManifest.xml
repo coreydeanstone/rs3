@@ -4,6 +4,11 @@
     <!-- Only used to load clue pictures from the RuneScape Wiki; everything else works offline. -->
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <!-- Lets the app find and open the Claude app for the "Ask Claude" button (Android 11+). -->
+    <queries>
+        <package android:name="com.anthropic.claude" />
+    </queries>
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
